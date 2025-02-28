@@ -1,0 +1,22 @@
+{
+    "author": "Matt Calkins",
+    "bugs": {
+        "url": "https://github.com/mattcalkins/m3c5s-log/issues"
+    },
+    "dependencies": {
+        "winston": "^3.17.0"
+    },
+    "name": "m3c5s-log",
+    "description": "A Winston logging wrapper.",
+    "homepage": "https://github.com/mattcalkins/m3c5s-log#readme",
+    "license": "MIT",
+    "main": "src/index.mjs",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/mattcalkins/m3c5s-log.git"
+    },
+    "scripts": {
+        "test": "node tests/index.mjs"
+    },
+    "version": "1.0.0-alpha.1"
+}
