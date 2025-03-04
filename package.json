@@ -4,6 +4,7 @@
         "url": "https://github.com/mattcalkins/m3c5s-log/issues"
     },
     "dependencies": {
+        "uuid": "^11.1.0",
         "winston": "^3.17.0"
     },
     "name": "m3c5s-log",
@@ -18,5 +19,5 @@
     "scripts": {
         "test": "node tests/index.mjs"
     },
-    "version": "1.0.0-alpha.1"
+    "version": "1.0.0-alpha.2"
 }
