@@ -19,5 +19,5 @@
     "scripts": {
         "test": "node tests/index.mjs"
     },
-    "version": "1.0.0-alpha.2"
+    "version": "1.0.0"
 }
