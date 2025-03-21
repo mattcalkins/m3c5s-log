@@ -121,10 +121,12 @@ function runTests() {
     let sessionLoggerFactory1 = createSessionLoggerFactory({
         appName: "test-app-1",
         appInstanceUUID: goodAppInstanceUUID1,
-        k8sNodeName: "k8s-node-1",
-        k8sPodName: "k8s-pod-1",
-        k8sPodUID: "k8s-pod-uid-1",
         logDirectory: goodLogDirectory,
+        logEntryTemplate: {
+            k8sNodeName: "k8s-node-1",
+            k8sPodName: "k8s-pod-1",
+            k8sPodUID: "k8s-pod-uid-1",
+        }
     });
 
 
@@ -140,10 +142,12 @@ function runTests() {
     let sessionLoggerFactory2 = createSessionLoggerFactory({
         appName: "test-app-2",
         appInstanceUUID: goodAppInstanceUUID2,
-        k8sNodeName: "k8s-node-2",
-        k8sPodName: "k8s-pod-2",
-        k8sPodUID: "k8s-pod-uid-2",
         logDirectory: goodLogDirectory,
+        logEntryTemplate: {
+            k8sNodeName: "k8s-node-2",
+            k8sPodName: "k8s-pod-2",
+            k8sPodUID: "k8s-pod-uid-2",
+        }
     });
 
     const logger2 = sessionLoggerFactory2.getSessionLogger();
