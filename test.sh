@@ -32,10 +32,10 @@ PACK_FILENAME=$(npm pack)
 tar -xzf $PACK_FILENAME -C $NPM_PACKAGE_DIRECTORY --strip-components=1
 rm $PACK_FILENAME
 
-pushd $NPM_PACKAGE_DIRECTORY
+pushd $NPM_PACKAGE_DIRECTORY > /dev/null
 echo_header "m3c5s-log: npm install"
 npm install
-popd
+popd > /dev/null
 
 
 pushd $ESM_TEST_1_DIRECTORY > /dev/null
@@ -52,4 +52,4 @@ echo_header "cjs-test-1: node cjs-test-1.cjs"
 node cjs-test-1.cjs
 popd > /dev/null
 
-echo_header "test.sh: all test completed"
+echo_header "test.sh: all tests completed"
