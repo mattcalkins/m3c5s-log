@@ -4,20 +4,37 @@
         "url": "https://github.com/mattcalkins/m3c5s-log/issues"
     },
     "dependencies": {
+        "attach-uuid": "^1.0.1",
         "uuid": "^11.1.0",
         "winston": "^3.17.0"
     },
-    "name": "m3c5s-log",
+    "devDependencies": {
+        "@types/node": "^22.13.10",
+        "typescript": "^5.8.2"
+    },
+    "exports": {
+        ".": {
+            "import": "./dist/esm/index.js",
+            "require": "./dist/cjs/index.js"
+        }
+    },
     "description": "A Winston logging wrapper.",
     "homepage": "https://github.com/mattcalkins/m3c5s-log#readme",
     "license": "MIT",
-    "main": "src/index.mjs",
+    "main": "dist/cjs/index.js",
+    "module": "dist/esm/index.js",
+    "name": "m3c5s-log",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/mattcalkins/m3c5s-log.git"
     },
     "scripts": {
+        "build:esm": "tsc --project tsconfig.esm.json",
+        "build:cjs": "tsc --project tsconfig.cjs.json",
+        "build": "npm run build:esm && npm run build:cjs && npm run postbuild:cjs",
+        "postbuild:cjs": "echo '{\"type\": \"commonjs\"}' > dist/cjs/package.json",
         "test": "node tests/index.mjs"
     },
-    "version": "1.0.0"
+    "type": "module",
+    "version": "2.0.0-alpha.1"
 }
