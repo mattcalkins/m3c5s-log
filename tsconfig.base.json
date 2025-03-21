@@ -1,0 +1,19 @@
+{
+    "compilerOptions": {
+        "declaration": true,
+        "esModuleInterop": true,
+        "removeComments": true,
+        "rootDir": "./src",
+        "skipLibCheck": true,
+        "strict": true,
+        "target": "ES2022",
+    },
+    "include": [
+        "src/**/*.ts"
+    ],
+    "exclude": [
+        "dist",
+        "node_modules",
+        "tests"
+    ]
+}
