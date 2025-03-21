@@ -1,3 +1,6 @@
 {
     "window.title": "m3c5s-log - ${activeRepositoryBranchName} - ${activeEditorShort}",
+    "cSpell.words": [
+        "postbuild"
+    ],
 }
