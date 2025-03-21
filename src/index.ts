@@ -17,17 +17,13 @@ const errorUUIDs = {
 interface LoggerFactoryOptions {
     appName: string;
     appInstanceUUID: string;
-    k8sNodeName?: string;
-    k8sPodName?: string;
-    k8sPodUID?: string;
     logDirectory: string;
+    logEntryTemplate?: LogEntry;
 }
 
 
 interface LogEntry {
-    message: string;
-    level?: string;
-    [key: string]: any; // Index signature allowing additional properties
+    [key: string]: any;
 }
 
 
@@ -44,7 +40,8 @@ interface SessionLogger {
 /**
  * Creates a singleton log controller object.
  */
-function createSessionLoggerFactory({ appName, appInstanceUUID, k8sNodeName, k8sPodName, k8sPodUID, logDirectory }: LoggerFactoryOptions): SessionLoggerFactory {
+function createSessionLoggerFactory({ appName, appInstanceUUID, logDirectory, logEntryTemplate }: LoggerFactoryOptions): SessionLoggerFactory {
+    const clonedLogEntryTemplate = logEntryTemplate ? structuredClone(logEntryTemplate) : {};
 
     /**
      * This function creates a session logger that should be used to create log entries for a single session. A session is a relatively short period of time that a user interacts with the application. For instance, a single request is a session, app startup is a session, and app shutdown is a session. All of the logs for a session are guaranteed to be written to the same log file even if the session spans multiple days, which would generally only happen if the session began just before midnight and ended just after midnight.
@@ -84,7 +81,11 @@ function createSessionLoggerFactory({ appName, appInstanceUUID, k8sNodeName, k8s
                 const reportableError = new Error(`The logEntry.message value '${messageAsJSON}' is not a non-empty string.`);
             }
 
-            const finalLogEntry = structuredClone(logEntry);
+            // Create a structured clone of the logEntryTemplate
+            const finalLogEntry = structuredClone(clonedLogEntryTemplate);
+
+            // Copy properties from logEntry onto finalLogEntry
+            Object.assign(finalLogEntry, logEntry);
 
             if (typeof finalLogEntry.level === "undefined") {
                 finalLogEntry.level = "info";
@@ -92,9 +93,6 @@ function createSessionLoggerFactory({ appName, appInstanceUUID, k8sNodeName, k8s
 
             finalLogEntry.appName = appName;
             finalLogEntry.appInstanceUUID = appInstanceUUID;
-            finalLogEntry.k8sNodeName = k8sNodeName;
-            finalLogEntry.k8sPodName = k8sPodName;
-            finalLogEntry.k8sPodUID = k8sPodUID;
 
 
             logger.log(finalLogEntry as any);
