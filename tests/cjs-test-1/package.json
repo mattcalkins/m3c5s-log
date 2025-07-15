@@ -1,0 +1,7 @@
+{
+    "dependencies": {
+        "attach-uuid": "^1.0.1",
+        "m3c5s-log": "file:../m3c5s-log-npm-package"
+    },
+    "type": "commonjs"
+}

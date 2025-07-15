@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 import { validate as validateUUID } from "uuid";
 import winston from "winston";
+import { attachUUID, getAttachedUUID } from 'attach-uuid';
 
 
 const errorUUIDs = {
@@ -13,28 +14,40 @@ const errorUUIDs = {
 };
 
 
+interface LoggerFactoryOptions {
+    appName: string;
+    appInstanceUUID: string;
+    logDirectory: string;
+    logEntryTemplate?: LogEntry;
+}
+
+
+interface LogEntry {
+    [key: string]: any;
+}
+
+
+interface SessionLoggerFactory {
+    getSessionLogger: () => SessionLogger;
+}
+
+
+interface SessionLogger {
+    log: (logEntry: LogEntry) => void;
+}
+
+
 /**
  * Creates a singleton log controller object.
- *
- * @param {string} logDirectory
- * @param {string} appInstanceUUID
- *
- * @returns {object}
  */
-function createSessionLoggerFactory({ appName, appInstanceUUID, k8sNodeName, k8sPodName, k8sPodUID, logDirectory }) {
+function createSessionLoggerFactory({ appName, appInstanceUUID, logDirectory, logEntryTemplate }: LoggerFactoryOptions): SessionLoggerFactory {
+    const clonedLogEntryTemplate = logEntryTemplate ? structuredClone(logEntryTemplate) : {};
 
     /**
-     * This function creates a session logger that should be used to create log entries for a single session. A session is a relatively short period of time that a user interacts with the application. For instance, a single request is a session, app startup is a session, and app shutdown is a session. All of the logs for a session are guaranteed to be written to the same log file even if the session spans multiple days, which would generally only happen if the sesion began just before midnight and ended just after midnight.
-     *
-     * @returns {object}
-     *
-     *      {
-     *         log: (message, level = "info") => void
-     *      }
+     * This function creates a session logger that should be used to create log entries for a single session. A session is a relatively short period of time that a user interacts with the application. For instance, a single request is a session, app startup is a session, and app shutdown is a session. All of the logs for a session are guaranteed to be written to the same log file even if the session spans multiple days, which would generally only happen if the session began just before midnight and ended just after midnight.
      */
-    function createSessionLogger() {
+    function createSessionLogger(): SessionLogger {
         const day = new Date().toISOString().split('T')[0];
-
         const logger = winston.createLogger({
             level: "info",
             format: winston.format.combine(
@@ -51,15 +64,13 @@ function createSessionLoggerFactory({ appName, appInstanceUUID, k8sNodeName, k8s
 
         /**
          * This function writes a log entry to the log file.
-         *
-         * @param {object} logEntry
          */
-        function log(logEntry) {
+        function log(logEntry: LogEntry): void {
             if (typeof logEntry !== "object") {
                 let logEntryAsJSON = JSON.stringify(logEntry);
 
                 const reportableError = new Error(`The logEntry argument of '${logEntryAsJSON}' is not an object.`);
-                reportableError.UUID = errorUUIDs.invalidLogEntry;
+                attachUUID(reportableError, errorUUIDs.invalidLogEntry);
 
                 throw reportableError;
             }
@@ -70,7 +81,11 @@ function createSessionLoggerFactory({ appName, appInstanceUUID, k8sNodeName, k8s
                 const reportableError = new Error(`The logEntry.message value '${messageAsJSON}' is not a non-empty string.`);
             }
 
-            const finalLogEntry = structuredClone(logEntry);
+            // Create a structured clone of the logEntryTemplate
+            const finalLogEntry = structuredClone(clonedLogEntryTemplate);
+
+            // Copy properties from logEntry onto finalLogEntry
+            Object.assign(finalLogEntry, logEntry);
 
             if (typeof finalLogEntry.level === "undefined") {
                 finalLogEntry.level = "info";
@@ -78,12 +93,9 @@ function createSessionLoggerFactory({ appName, appInstanceUUID, k8sNodeName, k8s
 
             finalLogEntry.appName = appName;
             finalLogEntry.appInstanceUUID = appInstanceUUID;
-            finalLogEntry.k8sNodeName = k8sNodeName;
-            finalLogEntry.k8sPodName = k8sPodName;
-            finalLogEntry.k8sPodUID = k8sPodUID;
 
 
-            logger.log(finalLogEntry);
+            logger.log(finalLogEntry as any);
         }
 
 
@@ -107,7 +119,7 @@ function createSessionLoggerFactory({ appName, appInstanceUUID, k8sNodeName, k8s
         if (appNameIsValid !== true) {
             const appNameAsJSON = JSON.stringify(appName);
             const reportableError = new Error(`The appName argument of '${appName}' is not valid. Only letters, numbers, and hyphens are allowed.`);
-            reportableError.UUID = errorUUIDs.invalidAppName;
+            attachUUID(reportableError, errorUUIDs.invalidAppName);
 
             throw reportableError;
         }
@@ -118,7 +130,7 @@ function createSessionLoggerFactory({ appName, appInstanceUUID, k8sNodeName, k8s
 
     if (validateUUID(appInstanceUUID) !== true) {
         const reportableError = new Error(`The appInstanceUUID argument of ${appInstanceUUID} is not a valid UUID.`);
-        reportableError.UUID = errorUUIDs.invalidAppInstanceUUID;
+        attachUUID(reportableError, errorUUIDs.invalidAppInstanceUUID);
 
         throw reportableError;
     }
@@ -131,8 +143,8 @@ function createSessionLoggerFactory({ appName, appInstanceUUID, k8sNodeName, k8s
     try {
         fs.writeFileSync(testFilePath, "test");
     } catch (error) {
-        const reportableError = new Error(`The log directory argument of ${logDirectory} is not writable. Previous error message: ${error.message}`);
-        reportableError.UUID = errorUUIDs.logDirectoryIsNotWritable;
+        const reportableError = new Error(`The log directory argument of ${logDirectory} is not writable. Previous error message: ${(error as Error).message}`);
+        attachUUID(reportableError, errorUUIDs.logDirectoryIsNotWritable);
 
         throw reportableError;
     }
@@ -140,8 +152,8 @@ function createSessionLoggerFactory({ appName, appInstanceUUID, k8sNodeName, k8s
     try {
         fs.unlinkSync(testFilePath);
     } catch (error) {
-        const reportableError = new Error(`Failed to clean up the log directory test file. Previous error message: ${error.message}`);
-        reportableError.UUID = errorUUIDs.unableToCleanUpTestFile;
+        const reportableError = new Error(`Failed to clean up the log directory test file. Previous error message: ${(error as Error).message}`);
+        attachUUID(reportableError, errorUUIDs.unableToCleanUpTestFile);
 
         throw reportableError;
     }

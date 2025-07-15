@@ -1,15 +1,14 @@
-import { createSessionLoggerFactory, errorUUIDs } from "../src/index.mjs";
-import { v7 as uuidv7 } from "uuid";
-
+import { createSessionLoggerFactory, errorUUIDs } from "m3c5s-log";
+import { getAttachedUUID } from "attach-uuid";
 
 const badLogDirectory = "/one/bad/directory/";
-const goodLogDirectory = "./tests/test-logs";
+const goodLogDirectory = "./logs";
 
 const badAppInstanceUUID = "not-a-uuid";
 const goodAppInstanceUUID1 = "01955f37-c314-7539-a843-ff72a6fe48c2";
 const goodAppInstanceUUID2 = "01955f38-3101-71ff-ab00-edafa5200376";
 
-const goodAppName = "test-app-1";
+const goodAppName = "esm-test-1";
 
 
 /**
@@ -38,7 +37,7 @@ function runTests() {
         });
     } catch (error) {
         lastError = error;
-        actualErrorUUID = error.UUID;
+        actualErrorUUID = getAttachedUUID(error);
     }
 
     if (actualErrorUUID !== expectedErrorUUID) {
@@ -62,7 +61,7 @@ function runTests() {
         });
     } catch (error) {
         lastError = error;
-        actualErrorUUID = error.UUID;
+        actualErrorUUID = getAttachedUUID(error);
     }
 
     if (actualErrorUUID !== expectedErrorUUID) {
@@ -85,7 +84,7 @@ function runTests() {
         });
     } catch (error) {
         lastError = error;
-        actualErrorUUID = error.UUID;
+        actualErrorUUID = getAttachedUUID(error);
     }
 
     if (actualErrorUUID !== expectedErrorUUID) {
@@ -107,7 +106,7 @@ function runTests() {
         });
     } catch (error) {
         lastError = error;
-        actualErrorUUID = error.UUID
+        actualErrorUUID = getAttachedUUID(error);
     }
 
     if (actualErrorUUID !== expectedErrorUUID) {
@@ -122,10 +121,12 @@ function runTests() {
     let sessionLoggerFactory1 = createSessionLoggerFactory({
         appName: "test-app-1",
         appInstanceUUID: goodAppInstanceUUID1,
-        k8sNodeName: "k8s-node-1",
-        k8sPodName: "k8s-pod-1",
-        k8sPodUID: "k8s-pod-uid-1",
         logDirectory: goodLogDirectory,
+        logEntryTemplate: {
+            k8sNodeName: "k8s-node-1",
+            k8sPodName: "k8s-pod-1",
+            k8sPodUID: "k8s-pod-uid-1",
+        }
     });
 
 
@@ -141,10 +142,12 @@ function runTests() {
     let sessionLoggerFactory2 = createSessionLoggerFactory({
         appName: "test-app-2",
         appInstanceUUID: goodAppInstanceUUID2,
-        k8sNodeName: "k8s-node-2",
-        k8sPodName: "k8s-pod-2",
-        k8sPodUID: "k8s-pod-uid-2",
         logDirectory: goodLogDirectory,
+        logEntryTemplate: {
+            k8sNodeName: "k8s-node-2",
+            k8sPodName: "k8s-pod-2",
+            k8sPodUID: "k8s-pod-uid-2",
+        }
     });
 
     const logger2 = sessionLoggerFactory2.getSessionLogger();
@@ -154,8 +157,6 @@ function runTests() {
     }
 
     logger2.log({ message: "log 2 message" });
-
-    console.log("All tests passed.");
 }
 
 runTests();
